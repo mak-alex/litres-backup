@@ -38,7 +38,7 @@ Flags:
   -h, --help                          help for book
   -n, --normalized_name               Normalize book name
   -b, --progress                      Show progress bar
-  -f, --format string     Downloading format. 'list' for available (default "fb2.zip")
+  -f, --format string                 Downloading format. 'list' for available (default "fb2.zip")
   -t, --search_by_title string        Search book by title, ex: 'Девушка, которая играла с огнем'
   -a, --show_available_for_download   Display a list of available books for download
 
