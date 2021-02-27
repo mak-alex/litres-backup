@@ -8,9 +8,6 @@
 
 _Базируется на litres api версии 3.31_
 
-## Dependencies
-- github.com/cheggaaa/pb
-
 ## Как пользоваться
 
 ```
