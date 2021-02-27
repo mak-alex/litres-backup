@@ -1,0 +1,26 @@
+# ignore
+cmd/build
+*.pid
+*.sql
+.idea/
+b7m
+*.exe
+*.log
+.DS_Store
+config/
+*.pid
+*.lock
+workspace/
+logs/
+vendor/
+cache/*
+out/
+scripts/
+*.puml
+TODO.md
+.vscode/*
+__debug_bin
+main
+dependencies/vendor/
+images
+config-*

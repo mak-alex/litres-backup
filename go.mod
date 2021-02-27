@@ -2,4 +2,9 @@ module github.com/mak-alex/backlitr
 
 go 1.16
 
-require github.com/cheggaaa/pb v1.0.29
+require (
+	github.com/cheggaaa/pb v1.0.29
+	github.com/mitchellh/go-homedir v1.1.0
+	github.com/spf13/cobra v1.1.3
+	github.com/spf13/viper v1.7.1
+)
