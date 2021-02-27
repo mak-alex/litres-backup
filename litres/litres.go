@@ -283,7 +283,6 @@ func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, e
 		return bytesArray, err
 	} else {
 		file := list.Fb2Book[*id]
-
 		ext := filepath.Ext(file.Filename)
 
 		var filename string
@@ -307,15 +306,15 @@ func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, e
 	}
 }
 
-func (l *Litres) existsBook(filepath string) bool {
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+func (l *Litres) existsBook(filePath string) bool {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return false
 	}
 	return true
 }
 
-func (l *Litres) getFileSize1(filepath string) (int64, error) {
-	fi, err := os.Stat(filepath)
+func (l *Litres) getFileSize1(filePath string) (int64, error) {
+	fi, err := os.Stat(filePath)
 	if err != nil {
 		return 0, err
 	}
@@ -323,8 +322,8 @@ func (l *Litres) getFileSize1(filepath string) (int64, error) {
 	return fi.Size(), nil
 }
 
-func (l *Litres) getFileSize2(filepath string) (int64, error) {
-	f, err := os.Open(filepath)
+func (l *Litres) getFileSize2(filePath string) (int64, error) {
+	f, err := os.Open(filePath)
 	if err != nil {
 		return 0, err
 	}
@@ -338,7 +337,7 @@ func (l *Litres) getFileSize2(filepath string) (int64, error) {
 	return fi.Size(), nil
 }
 
-func (l *Litres) download(hubID, filepath string) (body string, err error) {
+func (l *Litres) download(hubID, filePath string) (body string, err error) {
 
 	data := url.Values{}
 	data.Set("sid", l.sid)
@@ -372,20 +371,20 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 	}()
 
 	if !strings.Contains(res.Header.Get("Content-Disposition"), "attachment") {
-		log.Printf("Downloading this book: %s is not possible", filepath)
+		log.Printf("Downloading this book: %s is not possible", filePath)
 		return "", errors.New("<catalit-download-drm-failed/>")
 	}
 
 	fsize, _ := strconv.Atoi(res.Header.Get("Content-Length"))
 
-	if localFileSize, err := l.getFileSize1(filepath); err == nil {
-		if l.existsBook(filepath) && localFileSize == int64(fsize) {
-			log.Printf("Book %s (%s) exists", filepath, l.lenReadable(fsize, 2))
+	if localFileSize, err := l.getFileSize1(filePath); err == nil {
+		if l.existsBook(filePath) && localFileSize == int64(fsize) {
+			log.Printf("Book %s (%s) exists", filePath, l.lenReadable(fsize, 2))
 			return "", err
 		}
 	}
 
-	out, err := os.Create(filepath)
+	out, err := os.Create(filePath)
 	if err != nil {
 		return "", err
 	}
@@ -394,7 +393,7 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 	}()
 
 	if l.Progress {
-		counter := bar.NewWriteCounter(fsize, filepath)
+		counter := bar.NewWriteCounter(fsize, filePath)
 		counter.Start()
 		_, err = io.Copy(out, io.TeeReader(res.Body, counter))
 		if err != nil {
@@ -402,6 +401,8 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 		}
 
 		counter.Finish()
+	} else {
+		log.Printf("Book: %s downloaded", filePath)
 	}
 
 	_, err = io.Copy(out, res.Body)
@@ -409,7 +410,7 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 		return "", err
 	}
 
-	return out.Name(), nil
+	return filepath.Base(strings.TrimSpace(out.Name())), nil
 }
 
 func (l *Litres) lenReadable(length int, decimals int) (out string) {
