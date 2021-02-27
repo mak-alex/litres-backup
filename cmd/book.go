@@ -39,6 +39,7 @@ func init() {
 	bookCmd.Flags().StringVarP(&config.SearchByTitle, "search_by_title", "t", "", "Search book by title, ex: 'Девушка, которая играла с огнем'")
 	bookCmd.PersistentFlags().IntVarP(&config.BookID, "book_id", "i", -1, "Download or print book by № from available books for download")
 	bookCmd.PersistentFlags().BoolVarP(&config.Progress, "progress", "b", false, "Show progress bar")
+	rootCmd.PersistentFlags().StringVarP(&config.Format, "format", "f", "fb2.zip", "Downloading format. 'list' for available")
 	bookCmd.PersistentFlags().BoolVarP(&config.NormalizedName, "normalized_name", "n", false, "Normalize book name")
 	bookCmd.PersistentFlags().BoolVarP(&config.ShowAvailable4Download, "show_available_for_download", "a", false, "Display a list of available books for download")
 }
