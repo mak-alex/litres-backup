@@ -17,9 +17,12 @@ _Базируется на litres api версии 3.31_
         Downloading format. 'list' for available (default "list")
   -l string
         The directory where the books will be saved (default "/tmp")
+  -n    Normalize book name
   -p string
-        password (default "your_password")
+        password
+  -s string
+        Search book by title, ex: 'Девушка, которая играла с огнем'
   -u string
-        username (default "your_login")
+        username
   -v    be verbose (this is the default)
 ```
