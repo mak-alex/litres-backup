@@ -20,8 +20,15 @@ import (
 )
 
 var (
-	URL     = "http://robot.litres.ru/pages/"
-	formats = []string{
+	baseUrl         = "http://robot.litres.ru/"
+	authorizeUrl    = baseUrl + "pages/catalit_authorise/"
+	genresUrl       = baseUrl + "pages/catalit_genres/"
+	authorsUrl      = baseUrl + "pages/catalit_persons/"
+	catalogUrl      = baseUrl + "pages/catalit_browser/"
+	trialsUrl       = baseUrl + "static/trials/"
+	purchaseUrl     = baseUrl + "pages/purchase_book/"
+	downloadBookUrl = baseUrl + "pages/catalit_download_book/"
+	formats         = []string{
 		"fb2.zip",
 		"html",
 		"html.zip",
@@ -92,7 +99,7 @@ func (l *Litres) authorise() {
 		log.Printf("Authorization data: %v", data)
 	}
 	client := &http.Client{}
-	r, err := http.NewRequest("POST", URL+"catalit_authorise/", strings.NewReader(data.Encode())) // URL-encoded payload
+	r, err := http.NewRequest("POST", authorizeUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
@@ -133,7 +140,7 @@ func (l *Litres) GetBooks() *model.CatalitFb2Books {
 	data.Set("limit", "0,1000")
 
 	client := &http.Client{}
-	r, err := http.NewRequest("POST", URL+"catalit_browser/", strings.NewReader(data.Encode())) // URL-encoded payload
+	r, err := http.NewRequest("POST", catalogUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
@@ -217,7 +224,7 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 
 	client := &http.Client{}
 	// Get the data
-	r, err := http.NewRequest("POST", URL+"catalit_download_book/", strings.NewReader(data.Encode())) // URL-encoded payload
+	r, err := http.NewRequest("POST", downloadBookUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
