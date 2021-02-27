@@ -173,7 +173,7 @@ func (l *Litres) DownloadBooks() ([]string, error) {
 	for _, file := range list.Fb2Book {
 		go func(file model.Fb2Book) {
 			ext := filepath.Ext(file.Filename)
-			filename := strings.ReplaceAll(file.Filename, ext, l.Format)
+			filename := strings.ReplaceAll(file.Filename, strings.TrimLeft(ext, "."), l.Format)
 			if l.Debug {
 				log.Println("Filename:", filename)
 			}
