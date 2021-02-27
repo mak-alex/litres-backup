@@ -1,5 +1,6 @@
 ## BackLitr - Assistant for backing up your books from a book resource litres.ru
 
+More information on the [wiki](https://github.com/mak-alex/backlitr/wiki)
 
 ### BackLitr --help
 ```
