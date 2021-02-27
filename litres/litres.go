@@ -27,13 +27,13 @@ const (
 	KB = 1000
 
 	// urls
-	baseUrl         = "http://robot.litres.ru/"
-	authorizeUrl    = baseUrl + "pages/catalit_authorise/"
-	genresUrl       = baseUrl + "pages/catalit_genres/"
-	authorsUrl      = baseUrl + "pages/catalit_persons/"
-	catalogUrl      = baseUrl + "pages/catalit_browser/"
-	trialsUrl       = baseUrl + "static/trials/"
-	purchaseUrl     = baseUrl + "pages/purchase_book/"
+	baseUrl      = "http://robot.litres.ru/"
+	authorizeUrl = baseUrl + "pages/catalit_authorise/"
+	//genresUrl       = baseUrl + "pages/catalit_genres/"
+	//authorsUrl      = baseUrl + "pages/catalit_persons/"
+	catalogUrl = baseUrl + "pages/catalit_browser/"
+	//trialsUrl       = baseUrl + "static/trials/"
+	//purchaseUrl     = baseUrl + "pages/purchase_book/"
 	downloadBookUrl = baseUrl + "pages/catalit_download_book/"
 )
 
@@ -133,6 +133,9 @@ func (l *Litres) authorise() {
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
+	if r == nil {
+		return
+	}
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
@@ -140,10 +143,15 @@ func (l *Litres) authorise() {
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
+	if res == nil {
+		return
+	}
 	if l.Debug {
 		log.Println(res.Status)
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil && l.Verbose {
 		log.Fatal(err)
@@ -180,6 +188,9 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
+	if r == nil {
+		return nil
+	}
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
@@ -187,10 +198,15 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
+	if res == nil {
+		return nil
+	}
 	if l.Debug {
 		log.Println(res.Status)
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil && l.Verbose {
 		log.Fatal(err)
@@ -312,7 +328,9 @@ func (l *Litres) getFileSize2(filepath string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 	fi, err := f.Stat()
 	if err != nil {
 		return 0, err
@@ -333,6 +351,9 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
+	if r == nil {
+		return
+	}
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
@@ -340,10 +361,15 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 	if err != nil && l.Verbose {
 		log.Fatal(err)
 	}
+	if res == nil {
+		return
+	}
 	if l.Debug {
 		log.Println(res.Status)
 	}
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 
 	if !strings.Contains(res.Header.Get("Content-Disposition"), "attachment") {
 		log.Printf("Downloading this book: %s is not possible", filepath)
@@ -363,7 +389,9 @@ func (l *Litres) download(hubID, filepath string) (body string, err error) {
 	if err != nil {
 		return "", err
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 
 	if l.Progress {
 		counter := bar.NewWriteCounter(fsize, filepath)
