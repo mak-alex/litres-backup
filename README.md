@@ -11,6 +11,12 @@
 
 More information on the [wiki](https://github.com/mak-alex/backlitr/wiki)
 
+### Install
+```
+go install github.com/mak-alex/backlitr
+```
+
+## How to use
 ### BackLitr --help
 ```
 BackLitr - Assistant for backing up your books from a book resource litres.ru
