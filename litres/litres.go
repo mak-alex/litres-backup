@@ -224,6 +224,26 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 
 func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, error) {
 	list := l.GetBooks(checkpoint, search)
+	do := func(file model.Fb2Book) (string, error) {
+		ext := filepath.Ext(file.Filename)
+		var filename string
+		if l.NormalizedName {
+			filename = fmt.Sprintf(
+				"%s %s - %s.%s",
+				file.TextDescription.Hidden.TitleInfo.Author.FirstName,
+				file.TextDescription.Hidden.TitleInfo.Author.LastName,
+				file.TextDescription.Hidden.TitleInfo.BookTitle,
+				l.Format,
+			)
+		} else {
+			filename = strings.ReplaceAll(file.Filename, strings.TrimLeft(ext, "."), l.Format)
+		}
+		if l.Debug {
+			log.Println("Filename:", filename)
+		}
+
+		return l.download(file.HubID, path.Join(l.BookPath, filename))
+	}
 
 	if l.Available4Download {
 		l.ShowAvailable4Download(list.Fb2Book)
@@ -236,25 +256,7 @@ func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, e
 	if id == nil || *id == -1 {
 		for _, file := range list.Fb2Book {
 			go func(file model.Fb2Book) {
-				ext := filepath.Ext(file.Filename)
-
-				var filename string
-				if l.NormalizedName {
-					filename = fmt.Sprintf(
-						"%s %s - %s.%s",
-						file.TextDescription.Hidden.TitleInfo.Author.FirstName,
-						file.TextDescription.Hidden.TitleInfo.Author.LastName,
-						file.TextDescription.Hidden.TitleInfo.BookTitle,
-						l.Format,
-					)
-				} else {
-					filename = strings.ReplaceAll(file.Filename, strings.TrimLeft(ext, "."), l.Format)
-				}
-				if l.Debug {
-					log.Println("Filename:", filename)
-				}
-
-				name, err := l.download(file.HubID, path.Join(l.BookPath, filename))
+				name, err := do(file)
 				if err != nil {
 					errch <- err
 					done <- ""
@@ -282,27 +284,8 @@ func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, e
 		}
 		return bytesArray, err
 	} else {
-		file := list.Fb2Book[*id]
-		ext := filepath.Ext(file.Filename)
-
-		var filename string
-		if l.NormalizedName {
-			filename = fmt.Sprintf(
-				"%s %s - %s.%s",
-				file.TextDescription.Hidden.TitleInfo.Author.FirstName,
-				file.TextDescription.Hidden.TitleInfo.Author.LastName,
-				file.TextDescription.Hidden.TitleInfo.BookTitle,
-				l.Format,
-			)
-		} else {
-			filename = strings.ReplaceAll(file.Filename, strings.TrimLeft(ext, "."), l.Format)
-		}
-		if l.Debug {
-			log.Println("Filename:", filename)
-		}
-
-		_, err := l.download(file.HubID, path.Join(l.BookPath, filename))
-		return nil, err
+		res, err := do(list.Fb2Book[*id])
+		return []string{res}, err
 	}
 }
 
