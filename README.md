@@ -24,7 +24,7 @@ Available Commands:
   help        Help about any command
 
 Flags:
-      --config string   filepath to config.yaml (default "/home/mak/.backlitr/config/config.yaml")
+      --config string   filepath to config.yaml (default "~/.backlitr/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -h, --help            help for BackLitr
@@ -44,7 +44,7 @@ Usage:
 Flags:
   -h, --help                 help for config
   -l, --library string       The directory where the books will be saved (default "/tmp")
-      --logFile string       log file name (default "/home/mak/.backlitr/logs/backlitr.log")
+      --logFile string       log file name (default "~/.backlitr/logs/backlitr.log")
       --logFileAge int       log file save max days (default 7)
       --logFileBackups int   number of log backup (default 3)
       --logFileCompress      compress log file (default true)
@@ -54,7 +54,7 @@ Flags:
   -u, --user string          username
 
 Global Flags:
-      --config string   filepath to config.yaml (default "/home/mak/.backlitr/config/config.yaml")
+      --config string   filepath to config.yaml (default "~/.backlitr/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -v, --verbose         be verbose (this is the default)
@@ -76,7 +76,7 @@ Flags:
   -a, --show_available_for_download   Display a list of available books for download
 
 Global Flags:
-      --config string   filepath to config.yaml (default "/home/mak/.backlitr/config/config.yaml")
+      --config string   filepath to config.yaml (default "~/.backlitr/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -v, --verbose         be verbose (this is the default)
