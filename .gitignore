@@ -3,7 +3,7 @@ cmd/build
 *.pid
 *.sql
 .idea/
-b7m
+backlitr
 *.exe
 *.log
 .DS_Store

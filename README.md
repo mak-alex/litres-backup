@@ -11,19 +11,44 @@ Usage:
 
 Available Commands:
   book        Back up all your books, search for necessary ones, and much more
+  config      Initial config generation
   help        Help about any command
 
 Flags:
-      --config string     config file (default is $HOME/.cobra.yaml)
-  -d, --debug             print lots of debugging information
-  -h, --help              help for BackLitr
-  -l, --library string    The directory where the books will be saved (default "/tmp")
-  -p, --password string   password
-  -u, --user string       username
-  -v, --verbose           be verbose (this is the default)
-      --version           version for BackLitr
+      --config string   filepath to config.yaml (default "/home/mak/.backlitr/config/config.yaml")
+  -d, --debug           print lots of debugging information
+  -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
+  -h, --help            help for BackLitr
+  -v, --verbose         be verbose (this is the default)
+      --version         version for BackLitr
 
 Use "BackLitr [command] --help" for more information about a command.
+```
+
+### BackLitr config --help
+```
+Initial config generation
+
+Usage:
+  BackLitr config [flags]
+
+Flags:
+  -h, --help                 help for config
+  -l, --library string       The directory where the books will be saved (default "/tmp")
+      --logFile string       log file name (default "/home/mak/.backlitr/logs/backlitr.log")
+      --logFileAge int       log file save max days (default 7)
+      --logFileBackups int   number of log backup (default 3)
+      --logFileCompress      compress log file (default true)
+      --logFileMaxSize int   max log file size (default 1024)
+      --mode string          server run mode (default "debug")
+  -p, --password string      password
+  -u, --user string          username
+
+Global Flags:
+      --config string   filepath to config.yaml (default "/home/mak/.backlitr/config/config.yaml")
+  -d, --debug           print lots of debugging information
+  -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
+  -v, --verbose         be verbose (this is the default)
 ```
 
 ### BackLitr book --help
@@ -38,15 +63,12 @@ Flags:
   -h, --help                          help for book
   -n, --normalized_name               Normalize book name
   -b, --progress                      Show progress bar
-  -f, --format string                 Downloading format. 'list' for available (default "fb2.zip")
   -t, --search_by_title string        Search book by title, ex: 'Девушка, которая играла с огнем'
   -a, --show_available_for_download   Display a list of available books for download
 
 Global Flags:
-      --config string     config file (default is $HOME/.cobra.yaml)
-  -d, --debug             print lots of debugging information
-  -l, --library string    The directory where the books will be saved (default "/tmp")
-  -p, --password string   password
-  -u, --user string       username
-  -v, --verbose           be verbose (this is the default)
+      --config string   filepath to config.yaml (default "/home/mak/.backlitr/config/config.yaml")
+  -d, --debug           print lots of debugging information
+  -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
+  -v, --verbose         be verbose (this is the default)
 ```

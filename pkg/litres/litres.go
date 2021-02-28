@@ -1,10 +1,12 @@
 package litres
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/mak-alex/backlitr/pkg/logger"
+	"github.com/mak-alex/backlitr/tools"
+	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,8 +18,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mak-alex/backlitr/bar"
-	"github.com/mak-alex/backlitr/model"
+	"github.com/mak-alex/backlitr/pkg/bar"
+	"github.com/mak-alex/backlitr/pkg/model"
 )
 
 const (
@@ -57,7 +59,7 @@ var (
 type Litres struct {
 	Login              string
 	Password           string
-	BookPath           string
+	Library            string
 	Format             string
 	NormalizedName     bool
 	Available4Download bool
@@ -75,13 +77,13 @@ func New(litres *Litres) *Litres {
 	}
 
 	if litres.Login == "" {
-		log.Fatal("'Login` can't be nil")
+		logger.Work.Error("[litres.New] can't be nil", zap.String("login", litres.Login))
 	}
 	if litres.Password == "" {
-		log.Fatal("'Password` can't be nil")
+		logger.Work.Error("[litres.New] can't be nil", zap.String("password", litres.Password))
 	}
-	if litres.BookPath == "" {
-		log.Fatal("'BookPath` can't be nil")
+	if litres.Library == "" {
+		logger.Work.Error("[litres.New] can't be nil", zap.String("library", litres.Library))
 	}
 
 	litres.authorise()
@@ -126,12 +128,12 @@ func (l *Litres) authorise() {
 	data.Set("pwd", l.Password)
 
 	if l.Debug {
-		log.Printf("Authorization data: %v", data)
+		logger.Work.Debug("[litres.authorise]", zap.Any("params", data))
 	}
 	client := &http.Client{}
 	r, err := http.NewRequest("POST", authorizeUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
-		log.Fatal(err)
+		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
 	}
 	if r == nil {
 		return
@@ -140,8 +142,8 @@ func (l *Litres) authorise() {
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
 	res, err := client.Do(r)
-	if err != nil && l.Verbose {
-		log.Fatal(err)
+	if err != nil {
+		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
 	}
 	if res == nil {
 		return
@@ -153,19 +155,15 @@ func (l *Litres) authorise() {
 		_ = res.Body.Close()
 	}()
 	body, err := ioutil.ReadAll(res.Body)
-	if err != nil && l.Verbose {
-		log.Fatal(err)
+	if err != nil {
+		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
 	}
 	if l.Debug {
-		log.Println(string(body))
+		logger.Work.Debug("[litres.authorise]", zap.Any("response", body))
 	}
 	catalitAuthorizationOk := model.CatalitAuthorizationOk{}
 	if err := xml.Unmarshal(body, &catalitAuthorizationOk); err != nil {
-		if l.Verbose {
-			log.Fatal(err)
-		} else {
-			log.Fatal("Authorization failed")
-		}
+		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
 	}
 
 	l.sid = catalitAuthorizationOk.Sid
@@ -186,7 +184,7 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 	client := &http.Client{}
 	r, err := http.NewRequest("POST", catalogUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
-		log.Fatal(err)
+		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 	}
 	if r == nil {
 		return nil
@@ -196,7 +194,7 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 
 	res, err := client.Do(r)
 	if err != nil && l.Verbose {
-		log.Fatal(err)
+		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 	}
 	if res == nil {
 		return nil
@@ -209,14 +207,14 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 	}()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil && l.Verbose {
-		log.Fatal(err)
+		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 	}
 	catalitFb2Books := model.CatalitFb2Books{}
 	if err := xml.Unmarshal(body, &catalitFb2Books); err != nil && l.Verbose {
-		log.Fatal(err)
+		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 	}
 	if l.Debug {
-		l.prettyPrint(catalitFb2Books)
+		tools.PrettyPrint(catalitFb2Books)
 	}
 
 	return &catalitFb2Books
@@ -242,7 +240,7 @@ func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, e
 			log.Println("Filename:", filename)
 		}
 
-		return l.download(file.HubID, path.Join(l.BookPath, filename))
+		return l.download(file.HubID, path.Join(l.Library, filename))
 	}
 
 	if l.Available4Download {
@@ -330,8 +328,8 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	client := &http.Client{}
 
 	r, err := http.NewRequest("POST", downloadBookUrl, strings.NewReader(data.Encode()))
-	if err != nil && l.Verbose {
-		log.Fatal(err)
+	if err != nil {
+		logger.Work.Fatal("[litres.download]", zap.Error(err))
 	}
 	if r == nil {
 		return
@@ -340,8 +338,8 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
 	res, err := client.Do(r)
-	if err != nil && l.Verbose {
-		log.Fatal(err)
+	if err != nil {
+		logger.Work.Fatal("[litres.download]", zap.Error(err))
 	}
 	if res == nil {
 		return
@@ -354,7 +352,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	}()
 
 	if !strings.Contains(res.Header.Get("Content-Disposition"), "attachment") {
-		log.Printf("Downloading this book: %s is not possible", filePath)
+		logger.Work.Info("[litres.download] not possible", zap.String("filePath", filePath))
 		return "", errors.New("<catalit-download-drm-failed/>")
 	}
 
@@ -362,7 +360,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 
 	if localFileSize, err := l.getFileSize1(filePath); err == nil {
 		if l.existsBook(filePath) && localFileSize == int64(fsize) {
-			log.Printf("Book %s (%s) exists", filePath, l.lenReadable(fsize, 2))
+			logger.Work.Info("[litres.download] exists", zap.String("filePath", filePath), zap.String("size", l.lenReadable(fsize, 2)))
 			return "", err
 		}
 	}
@@ -385,7 +383,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 
 		counter.Finish()
 	} else {
-		log.Printf("Book: %s downloaded", filePath)
+		logger.Work.Info("[litres.download] downloaded", zap.String("filePath", filePath))
 	}
 
 	_, err = io.Copy(out, res.Body)
@@ -448,12 +446,4 @@ func (l *Litres) lenReadable(length int, decimals int) (out string) {
 	}
 
 	return fmt.Sprintf("%d.%s %s", i, remainderString[:decimals], unit)
-}
-
-func (l *Litres) prettyPrint(data interface{}) {
-	b, err := json.MarshalIndent(data, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Print(string(b))
 }

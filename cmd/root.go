@@ -2,17 +2,18 @@ package cmd
 
 import (
 	"fmt"
-
-	"github.com/mak-alex/backlitr/conf"
-	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
+	"github.com/mak-alex/backlitr/pkg/consts"
+	"github.com/mak-alex/backlitr/pkg/logger"
+	"github.com/mak-alex/backlitr/tools"
 	"github.com/spf13/viper"
+	"os"
+	"path/filepath"
+
+	"github.com/mak-alex/backlitr/pkg/conf"
+	"github.com/spf13/cobra"
 )
 
-var config = &conf.Conf{}
 var (
-	cfgFile string
-
 	rootCmd = &cobra.Command{
 		Use:     "BackLitr",
 		Short:   "BackLitr - Assistant for backing up your books from a book resource litres.ru",
@@ -21,46 +22,31 @@ var (
 )
 
 // Execute executes the root command.
-func Execute() error {
+func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println("Executing root command")
-		return err
 	}
-	return nil
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	viper.SetConfigType("toml")
+	rootCmd.AddCommand(
+		configCmd,
+		bookCmd,
+	)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
-	rootCmd.PersistentFlags().StringVarP(&config.Login, "user", "u", "", "username")
-	rootCmd.PersistentFlags().StringVarP(&config.Password, "password", "p", "", "password")
-	rootCmd.PersistentFlags().StringVarP(&config.BookPath, "library", "l", "/tmp", "The directory where the books will be saved")
-	rootCmd.PersistentFlags().BoolVarP(&config.Verbose, "verbose", "v", false, "be verbose (this is the default)")
-	rootCmd.PersistentFlags().BoolVarP(&config.Debug, "debug", "d", false, "print lots of debugging information")
-
-	_ = viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("user"))
-	_ = viper.BindPFlag("user", rootCmd.PersistentFlags().Lookup("password"))
-	_ = viper.BindPFlag("library", rootCmd.PersistentFlags().Lookup("library"))
-
-	rootCmd.AddCommand(bookCmd)
+	rootCmd.PersistentFlags().BoolVarP(&conf.GlobalConfig.Verbose, "verbose", "v", false, "be verbose (this is the default)")
+	rootCmd.PersistentFlags().BoolVarP(&conf.GlobalConfig.Debug, "debug", "d", false, "print lots of debugging information")
+	rootCmd.PersistentFlags().StringVar(&conf.GlobalConfig.ConfPath, "config", filepath.Join(tools.DefaultConfigPath(), "config", consts.DefaultConfigFile), "filepath to config.yaml")
 }
 
-func initConfig() {
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		cobra.CheckErr(err)
-
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".backlitr")
+// Load the configuration from file
+func loadConfig(cmd *cobra.Command, args []string) {
+	err := conf.LoadConf(conf.GlobalConfig.ConfPath)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		fmt.Println("Please configure the server first before starting it: backlitr config --help")
+		os.Exit(-1)
 	}
-
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
+	logger.Work = logger.NewLogger(conf.GlobalConfig.Log, logger.InstanceZapLogger)
 }
