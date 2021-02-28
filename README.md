@@ -1,5 +1,14 @@
 ## BackLitr - Assistant for backing up your books from a book resource litres.ru
 
+### Opportunities:
+
+- View a list of available books for download
+- Download the entire list of available books for download
+- Search and download from the list of available books to download
+- Check for the existence of the downloaded book
+- Generating a configuration file (~/.backlitr/config/config.yaml)
+- Logging (~/.backlitr/logs/backlitr.log)
+
 More information on the [wiki](https://github.com/mak-alex/backlitr/wiki)
 
 ### BackLitr --help
