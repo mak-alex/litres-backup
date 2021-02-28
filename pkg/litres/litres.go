@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/mak-alex/backlitr/pkg/consts"
 	"github.com/mak-alex/backlitr/pkg/logger"
 	"github.com/mak-alex/backlitr/tools"
 	"go.uber.org/zap"
@@ -20,23 +21,6 @@ import (
 
 	"github.com/mak-alex/backlitr/pkg/bar"
 	"github.com/mak-alex/backlitr/pkg/model"
-)
-
-const (
-	TB = 1000000000000
-	GB = 1000000000
-	MB = 1000000
-	KB = 1000
-
-	// urls
-	baseUrl      = "http://robot.litres.ru/"
-	authorizeUrl = baseUrl + "pages/catalit_authorise/"
-	//genresUrl       = baseUrl + "pages/catalit_genres/"
-	//authorsUrl      = baseUrl + "pages/catalit_persons/"
-	catalogUrl = baseUrl + "pages/catalit_browser/"
-	//trialsUrl       = baseUrl + "static/trials/"
-	//purchaseUrl     = baseUrl + "pages/purchase_book/"
-	downloadBookUrl = baseUrl + "pages/catalit_download_book/"
 )
 
 var (
@@ -131,7 +115,7 @@ func (l *Litres) authorise() {
 		logger.Work.Debug("[litres.authorise]", zap.Any("params", data))
 	}
 	client := &http.Client{}
-	r, err := http.NewRequest("POST", authorizeUrl, strings.NewReader(data.Encode())) // URL-encoded payload
+	r, err := http.NewRequest("POST", consts.AuthorizeUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
 		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
 	}
@@ -182,7 +166,7 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 	data.Set("limit", "0,1000")
 
 	client := &http.Client{}
-	r, err := http.NewRequest("POST", catalogUrl, strings.NewReader(data.Encode())) // URL-encoded payload
+	r, err := http.NewRequest("POST", consts.CatalogUrl, strings.NewReader(data.Encode())) // URL-encoded payload
 	if err != nil && l.Verbose {
 		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 	}
@@ -327,7 +311,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 
 	client := &http.Client{}
 
-	r, err := http.NewRequest("POST", downloadBookUrl, strings.NewReader(data.Encode()))
+	r, err := http.NewRequest("POST", consts.DownloadBookUrl, strings.NewReader(data.Encode()))
 	if err != nil {
 		logger.Work.Fatal("[litres.download]", zap.Error(err))
 	}
@@ -360,7 +344,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 
 	if localFileSize, err := l.getFileSize1(filePath); err == nil {
 		if l.existsBook(filePath) && localFileSize == int64(fsize) {
-			logger.Work.Info("[litres.download] exists", zap.String("filePath", filePath), zap.String("size", l.lenReadable(fsize, 2)))
+			logger.Work.Info("[litres.download] exists", zap.String("filePath", filePath), zap.String("size", tools.LenReadable(fsize, 2)))
 			return "", err
 		}
 	}
@@ -392,58 +376,4 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	}
 
 	return filepath.Base(strings.TrimSpace(out.Name())), nil
-}
-
-func (l *Litres) lenReadable(length int, decimals int) (out string) {
-	var unit string
-	var i int
-	var remainder int
-
-	// Get whole number, and the remainder for decimals
-	if length > TB {
-		unit = "TB"
-		i = length / TB
-		remainder = length - (i * TB)
-	} else if length > GB {
-		unit = "GB"
-		i = length / GB
-		remainder = length - (i * GB)
-	} else if length > MB {
-		unit = "MB"
-		i = length / MB
-		remainder = length - (i * MB)
-	} else if length > KB {
-		unit = "KB"
-		i = length / KB
-		remainder = length - (i * KB)
-	} else {
-		return strconv.Itoa(length) + " B"
-	}
-
-	if decimals == 0 {
-		return strconv.Itoa(i) + " " + unit
-	}
-
-	// This is to calculate missing leading zeroes
-	width := 0
-	if remainder > GB {
-		width = 12
-	} else if remainder > MB {
-		width = 9
-	} else if remainder > KB {
-		width = 6
-	} else {
-		width = 3
-	}
-
-	// Insert missing leading zeroes
-	remainderString := strconv.Itoa(remainder)
-	for iter := len(remainderString); iter < width; iter++ {
-		remainderString = "0" + remainderString
-	}
-	if decimals > len(remainderString) {
-		decimals = len(remainderString)
-	}
-
-	return fmt.Sprintf("%d.%s %s", i, remainderString[:decimals], unit)
 }
