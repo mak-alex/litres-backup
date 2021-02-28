@@ -24,3 +24,5 @@ main
 dependencies/vendor/
 images
 config-*
+release
+release/*
