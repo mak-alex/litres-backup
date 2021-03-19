@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mak-alex/backlitr/cmd"
+	"github.com/mak-alex/litres-backup/cmd"
 )
 
 func main() {

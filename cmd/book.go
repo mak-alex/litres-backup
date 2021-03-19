@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"github.com/mak-alex/backlitr/pkg/conf"
+	"github.com/mak-alex/litres-backup/pkg/conf"
 	"os"
 
-	"github.com/mak-alex/backlitr/pkg/litres"
+	"github.com/mak-alex/litres-backup/pkg/litres"
 	"github.com/spf13/cobra"
 )
 

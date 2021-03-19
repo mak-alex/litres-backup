@@ -3,8 +3,8 @@ package logger
 import (
 	"github.com/mattn/go-colorable"
 
-	"github.com/mak-alex/backlitr/pkg/conf"
-	"github.com/mak-alex/backlitr/pkg/consts"
+	"github.com/mak-alex/litres-backup/pkg/conf"
+	"github.com/mak-alex/litres-backup/pkg/consts"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"

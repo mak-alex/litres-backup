@@ -3,7 +3,7 @@ package logger
 import (
 	"errors"
 	"fmt"
-	"github.com/mak-alex/backlitr/pkg/conf"
+	"github.com/mak-alex/litres-backup/pkg/conf"
 	"go.uber.org/zap"
 )
 

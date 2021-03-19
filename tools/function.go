@@ -3,7 +3,7 @@ package tools
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mak-alex/backlitr/pkg/consts"
+	"github.com/mak-alex/litres-backup/pkg/consts"
 	"log"
 	"os"
 	"path/filepath"
@@ -26,7 +26,7 @@ func DefaultConfigPath() string {
 			}
 		}
 		return os.Getenv("HOME")
-	}(), ".backlitr")
+	}(), ".litres-backup")
 
 	_ = MakeDirectory(workDirectory)
 	_ = MakeDirectory(filepath.Join(workDirectory, "logs"))

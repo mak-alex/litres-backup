@@ -1,8 +1,8 @@
 package conf
 
 import (
-	"github.com/mak-alex/backlitr/pkg/consts"
-	"github.com/mak-alex/backlitr/tools"
+	"github.com/mak-alex/litres-backup/pkg/consts"
+	"github.com/mak-alex/litres-backup/tools"
 	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -86,7 +86,7 @@ func SaveConfig(path string) error {
 		EnableFile:        true,
 		FileLevel:         consoleLogLevel,
 		FileJSONFormat:    false,
-		FileLocation:      filepath.Join(cwd, "logs", "backlitr.log"),
+		FileLocation:      filepath.Join(cwd, "logs", "litres-backup.log"),
 	}
 
 	err = toml.NewEncoder(cf).Encode(GlobalConfig)

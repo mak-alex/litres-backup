@@ -2,21 +2,21 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/mak-alex/backlitr/pkg/consts"
-	"github.com/mak-alex/backlitr/pkg/logger"
-	"github.com/mak-alex/backlitr/tools"
+	"github.com/mak-alex/litres-backup/pkg/consts"
+	"github.com/mak-alex/litres-backup/pkg/logger"
+	"github.com/mak-alex/litres-backup/tools"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 
-	"github.com/mak-alex/backlitr/pkg/conf"
+	"github.com/mak-alex/litres-backup/pkg/conf"
 	"github.com/spf13/cobra"
 )
 
 var (
 	rootCmd = &cobra.Command{
-		Use:     "BackLitr",
-		Short:   "BackLitr - Assistant for backing up your books from a book resource litres.ru",
+		Use:     "litres-backup",
+		Short:   "litres-backup - Assistant for backing up your books from a book resource litres.ru",
 		Version: "0.0.1",
 	}
 )
@@ -45,7 +45,7 @@ func loadConfig(cmd *cobra.Command, args []string) {
 	err := conf.LoadConf(conf.GlobalConfig.ConfPath)
 	if err != nil {
 		fmt.Printf("%+v\n", err)
-		fmt.Println("Please configure the server first before starting it: backlitr config --help")
+		fmt.Println("Please configure the server first before starting it: litres-backup config --help")
 		os.Exit(-1)
 	}
 	logger.Work = logger.NewLogger(conf.GlobalConfig.Log, logger.InstanceZapLogger)

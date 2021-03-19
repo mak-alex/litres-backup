@@ -1,4 +1,4 @@
-module github.com/mak-alex/backlitr
+module github.com/mak-alex/litres-backup
 
 go 1.16
 

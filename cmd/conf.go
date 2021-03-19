@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/mak-alex/backlitr/pkg/conf"
-	"github.com/mak-alex/backlitr/pkg/consts"
-	"github.com/mak-alex/backlitr/tools"
+	"github.com/mak-alex/litres-backup/pkg/conf"
+	"github.com/mak-alex/litres-backup/pkg/consts"
+	"github.com/mak-alex/litres-backup/tools"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -37,14 +37,10 @@ var configCmd = &cobra.Command{
 }
 
 func init() {
-	viper.SetEnvPrefix("backlitr")
+	viper.SetEnvPrefix("litres-backup")
 	viper.AutomaticEnv()
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-
-	// run mode
-	configCmd.Flags().String("mode", "debug", "server run mode")
-	_ = viper.BindPFlag("Mode", configCmd.Flags().Lookup("mode"))
 
 	configCmd.Flags().StringVarP(&conf.GlobalConfig.Login, "user", "u", "", "username")
 	_ = viper.BindPFlag("user", configCmd.Flags().Lookup("user"))

@@ -4,9 +4,9 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/mak-alex/backlitr/pkg/consts"
-	"github.com/mak-alex/backlitr/pkg/logger"
-	"github.com/mak-alex/backlitr/tools"
+	"github.com/mak-alex/litres-backup/pkg/consts"
+	"github.com/mak-alex/litres-backup/pkg/logger"
+	"github.com/mak-alex/litres-backup/tools"
 	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
@@ -19,8 +19,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mak-alex/backlitr/pkg/bar"
-	"github.com/mak-alex/backlitr/pkg/model"
+	"github.com/mak-alex/litres-backup/pkg/bar"
+	"github.com/mak-alex/litres-backup/pkg/model"
 )
 
 var (

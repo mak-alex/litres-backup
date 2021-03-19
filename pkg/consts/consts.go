@@ -26,13 +26,13 @@ const (
 	DefaultWorkdirName = "config"
 
 	// DefaultPidFilename is default filename of pid file
-	DefaultPidFilename = "backlitr.pid"
+	DefaultPidFilename = "litres-backup.pid"
 
 	// DefaultLockFilename is default filename of lock file
-	DefaultLockFilename = "backlitr.lock"
+	DefaultLockFilename = "litres-backup.lock"
 
 	// DefaultLogFileName
-	DefaultLogFileName = "backlitr.log"
+	DefaultLogFileName = "litres-backup.log"
 
 	// server file dir
 	DefaultSystemDataDirName = "system-data"
