@@ -1,4 +1,4 @@
-## BackLitr - Assistant for backing up your books from a book resource litres.ru
+## litres-backup - Assistant for backing up your books from a book resource litres.ru
 
 ### Opportunities:
 
@@ -6,23 +6,25 @@
 - Download the entire list of available books for download
 - Search and download from the list of available books to download
 - Check for the existence of the downloaded book
-- Generating a configuration file (~/.backlitr/config/config.yaml)
-- Logging (~/.backlitr/logs/backlitr.log)
+- Generating a configuration file (~/.litres-backup/config/config.yaml)
+- Logging (~/.litres-backup/logs/litres-backup.log)
 
-More information on the [wiki](https://github.com/mak-alex/backlitr/wiki)
+More information on the [wiki](https://github.com/mak-alex/litres-backup/wiki)
 
 ### Install
-```
-go install github.com/mak-alex/backlitr
+```bash
+$ git clone https://github.com/mak-alex/litres-backup.git $GOPATH/src/github.com/mak-alex/litres-backup
+$ cd $GOPATH/src/github.com/mak-alex/litres-backup && go install
+$ $GOPATH/bin/litres-backup --help
 ```
 
 ## How to use
-### BackLitr --help
+### litres-backup --help
 ```
-BackLitr - Assistant for backing up your books from a book resource litres.ru
+litres-backup - Assistant for backing up your books from a book resource litres.ru
 
 Usage:
-  BackLitr [command]
+  litres-backup [command]
 
 Available Commands:
   book        Back up all your books, search for necessary ones, and much more
@@ -30,27 +32,27 @@ Available Commands:
   help        Help about any command
 
 Flags:
-      --config string   filepath to config.yaml (default "~/.backlitr/config/config.yaml")
+      --config string   filepath to config.yaml (default "~/.litres-backup/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
-  -h, --help            help for BackLitr
+  -h, --help            help for litres-backup
   -v, --verbose         be verbose (this is the default)
-      --version         version for BackLitr
+      --version         version for litres-backup
 
-Use "BackLitr [command] --help" for more information about a command.
+Use "litres-backup [command] --help" for more information about a command.
 ```
 
-### BackLitr config --help
+### litres-backup config --help
 ```
 Initial config generation
 
 Usage:
-  BackLitr config [flags]
+  litres-backup config [flags]
 
 Flags:
   -h, --help                 help for config
   -l, --library string       The directory where the books will be saved (default "/tmp")
-      --logFile string       log file name (default "~/.backlitr/logs/backlitr.log")
+      --logFile string       log file name (default "~/.litres-backup/logs/litres-backup.log")
       --logFileAge int       log file save max days (default 7)
       --logFileBackups int   number of log backup (default 3)
       --logFileCompress      compress log file (default true)
@@ -60,18 +62,18 @@ Flags:
   -u, --user string          username
 
 Global Flags:
-      --config string   filepath to config.yaml (default "~/.backlitr/config/config.yaml")
+      --config string   filepath to config.yaml (default "~/.litres-backup/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -v, --verbose         be verbose (this is the default)
 ```
 
-### BackLitr book --help
+### litres-backup book --help
 ```
 Back up all your books, search for necessary ones, and much more
 
 Usage:
-  BackLitr book [OPTION]... [flags]
+  litres-backup book [OPTION]... [flags]
 
 Flags:
   -i, --book_id int                   Download or print book by № from available books for download (default -1)
@@ -82,7 +84,7 @@ Flags:
   -a, --show_available_for_download   Display a list of available books for download
 
 Global Flags:
-      --config string   filepath to config.yaml (default "~/.backlitr/config/config.yaml")
+      --config string   filepath to config.yaml (default "~/.litres-backup/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -v, --verbose         be verbose (this is the default)
