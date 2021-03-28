@@ -14,10 +14,9 @@ var _ *zap.Logger
 
 func getEncoder(isJSON bool) zapcore.Encoder {
 	var encoderConfig zapcore.EncoderConfig
-	if conf.GlobalConfig.Mode == "debug" {
+	encoderConfig = zap.NewProductionEncoderConfig()
+	if !conf.GlobalConfig.Mode {
 		encoderConfig = zap.NewDevelopmentEncoderConfig()
-	} else {
-		encoderConfig = zap.NewProductionEncoderConfig()
 	}
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder // for color
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder

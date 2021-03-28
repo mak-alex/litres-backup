@@ -17,9 +17,6 @@ var configCmd = &cobra.Command{
 	Short: "Initial config generation",
 	Run: func(cmd *cobra.Command, args []string) {
 		configPath, _ := cmd.Flags().GetString("path")
-		if err := conf.FillRuntimePaths(); err != nil {
-			log.Fatal("Filling config", zap.Error(err))
-		}
 
 		if configPath == "" {
 			configPath = filepath.Join(tools.DefaultConfigPath(), "config", consts.DefaultConfigFile)
@@ -41,6 +38,9 @@ func init() {
 	viper.AutomaticEnv()
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	configCmd.Flags().BoolVarP(&conf.GlobalConfig.Mode, "mode", "m", true, "production mode, short output logs")
+	_ = viper.BindPFlag("user", configCmd.Flags().Lookup("user"))
 
 	configCmd.Flags().StringVarP(&conf.GlobalConfig.Login, "user", "u", "", "username")
 	_ = viper.BindPFlag("user", configCmd.Flags().Lookup("user"))

@@ -16,35 +16,11 @@ const (
 	//Fatal is for logging fatal messages. The sytem shutsdown after logging the message.
 	Fatal = "fatal"
 
-	// config mode status production
-	ProductionMode = "production"
-
 	// DefaultConfigFile name of config file (toml format)
 	DefaultConfigFile = "config.yaml"
 
-	// DefaultWorkdirName name of working directory
-	DefaultWorkdirName = "config"
-
-	// DefaultPidFilename is default filename of pid file
-	DefaultPidFilename = "litres-backup.pid"
-
-	// DefaultLockFilename is default filename of lock file
-	DefaultLockFilename = "litres-backup.lock"
-
 	// DefaultLogFileName
 	DefaultLogFileName = "litres-backup.log"
-
-	// server file dir
-	DefaultSystemDataDirName = "system-data"
-
-	// frontend static file dir
-	DefaultFrontendStaticDirName = "public"
-
-	// user file upload file dir
-	DefaultUserDataDirName = "user-data"
-
-	// temp file dir
-	DefaultTempDirName = "framework-temp"
 
 	TB = 1000000000000
 	GB = 1000000000

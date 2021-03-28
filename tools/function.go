@@ -30,13 +30,6 @@ func DefaultConfigPath() string {
 
 	_ = MakeDirectory(workDirectory)
 	_ = MakeDirectory(filepath.Join(workDirectory, "logs"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "config"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "config", "site"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "plugins"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "workspace"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "workspace", "user-data"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "workspace", "system-data"))
-	//_ = MakeDirectory(filepath.Join(workDirectory, "workspace", "framework-temp"))
 
 	return workDirectory
 }

@@ -23,16 +23,14 @@ type BookFilter struct {
 type Conf struct {
 	Login    string `json:"login" yaml:"login" toml:"login,omitempty"`
 	Password string `json:"password" yaml:"password" toml:"password,omitempty"`
-	Library  string `json:"book_path" yaml:"book_path" toml:"book_path,omitempty"`
+	Library  string `json:"library" yaml:"library" toml:"library,omitempty"`
 
 	Verbose bool    `json:"verbose" yaml:"verbose" toml:"verbose,omitempty"`
 	Debug   bool    `json:"debug" yaml:"debug" toml:"debug,omitempty"`
 	Log     LogConf `json:"log" yaml:"log" toml:"log,omitempty"` // Logs
 
-	Mode     string `json:"mode,omitempty" yaml:"mode,omitempty"  yaml:"mode,omitempty"`
+	Mode     bool   `json:"mode,omitempty" yaml:"mode,omitempty" toml:"mode,omitempty"`
 	ConfPath string `json:"config_path" yaml:"config_path" toml:"config_path,omitempty"`
-	// Temporary files
-	TempDir string `json:"temp_dir" yaml:"temp_dir" toml:"temp_dir,omitempty"`
 }
 
 // LogConf represents parameters of log
@@ -71,7 +69,7 @@ func SaveConfig(path string) error {
 	}()
 
 	consoleLogLevel := consts.Warn
-	if GlobalConfig.Mode != consts.ProductionMode {
+	if !GlobalConfig.Mode {
 		consoleLogLevel = consts.Debug
 	}
 	cwd := tools.DefaultConfigPath()
@@ -121,16 +119,6 @@ func LoadConfToVar(path string, v *Conf) error {
 
 	if !strings.EqualFold(v.ConfPath, path) {
 		v.ConfPath = path
-	}
-
-	return nil
-}
-
-// FillRuntimePaths fills paths from runtime parameters
-func FillRuntimePaths() error {
-	cwd := tools.DefaultConfigPath()
-	if GlobalConfig.TempDir == "" {
-		GlobalConfig.TempDir = filepath.Join(cwd, "workspace", consts.DefaultTempDirName)
 	}
 
 	return nil
