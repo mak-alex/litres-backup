@@ -33,13 +33,15 @@ func (l *Litres) Print(books *model.CatalitFb2Books) {
 
 	if conf.FilterBook.BookTitle != "" || conf.FilterBook.BookID != "" {
 		b := books.FindBook(&conf.FilterBook.BookID, &conf.FilterBook.BookTitle)
-		pPrint(*b)
-		if conf.FilterBook.ShowDescription {
-			fmt.Println(fmt.Sprintf("\t\t%s", b.GetDescription()))
+		if b != nil {
+			pPrint(*b)
+			if conf.FilterBook.ShowDescription {
+				fmt.Println(fmt.Sprintf("\t\t%s", b.GetDescription()))
+			}
 		}
 	} else {
 		for i, b := range books.Fb2Book {
-			if i > 0 {
+			if i > 0 && conf.FilterBook.ShowDescription {
 				fmt.Printf("\n\n\n")
 			}
 			pPrint(b)

@@ -3,7 +3,6 @@ package model
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/mak-alex/litres-backup/tools"
 	"strings"
 )
 
@@ -22,7 +21,7 @@ type CatalitFb2Books struct {
 
 func (c *CatalitFb2Books) GetBookByID(id *string) *Fb2Book {
 	for _, fb2Book := range c.Fb2Book {
-		if fb2Book.HubID == *id {
+		if fb2Book.GetID() == *id {
 			return &fb2Book
 		}
 	}
@@ -31,8 +30,7 @@ func (c *CatalitFb2Books) GetBookByID(id *string) *Fb2Book {
 
 func (c *CatalitFb2Books) GetBookByTitle(title *string) *Fb2Book {
 	for _, fb2Book := range c.Fb2Book {
-		if strings.EqualFold(fb2Book.TextDescription.Hidden.TitleInfo.Text, *title) {
-			tools.PrettyPrint(fb2Book)
+		if strings.EqualFold(fb2Book.GetTitle(), *title) {
 			return &fb2Book
 		}
 	}
@@ -40,10 +38,14 @@ func (c *CatalitFb2Books) GetBookByTitle(title *string) *Fb2Book {
 }
 
 func (c *CatalitFb2Books) FindBook(id, title *string) *Fb2Book {
-	if id != nil {
+	if id != nil && *id != "" {
 		return c.GetBookByID(id)
 	}
-	return c.GetBookByTitle(title)
+	if title != nil && *title != "" {
+		return c.GetBookByTitle(title)
+	}
+
+	return nil
 }
 
 type Fb2Book struct {
