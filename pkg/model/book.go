@@ -1,6 +1,11 @@
 package model
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"github.com/mak-alex/litres-backup/tools"
+	"strings"
+)
 
 type CatalitFb2Books struct {
 	XMLName     xml.Name  `xml:"catalit-fb2-books"`
@@ -13,6 +18,32 @@ type CatalitFb2Books struct {
 	Bonus       string    `xml:"bonus,attr"`
 	OffersCnt   string    `xml:"offers_cnt,attr"`
 	Fb2Book     []Fb2Book `xml:"fb2-book"`
+}
+
+func (c *CatalitFb2Books) GetBookByID(id *string) *Fb2Book {
+	for _, fb2Book := range c.Fb2Book {
+		if fb2Book.HubID == *id {
+			return &fb2Book
+		}
+	}
+	return nil
+}
+
+func (c *CatalitFb2Books) GetBookByTitle(title *string) *Fb2Book {
+	for _, fb2Book := range c.Fb2Book {
+		if strings.EqualFold(fb2Book.TextDescription.Hidden.TitleInfo.Text, *title) {
+			tools.PrettyPrint(fb2Book)
+			return &fb2Book
+		}
+	}
+	return nil
+}
+
+func (c *CatalitFb2Books) FindBook(id, title *string) *Fb2Book {
+	if id != nil {
+		return c.GetBookByID(id)
+	}
+	return c.GetBookByTitle(title)
 }
 
 type Fb2Book struct {
@@ -215,4 +246,23 @@ type Fb2Book struct {
 			Middle string `xml:"middle,attr"`
 		} `xml:"persons"`
 	} `xml:"persons"`
+}
+
+func (b *Fb2Book) GetDescription() string {
+	return b.TextDescription.Hidden.TitleInfo.Annotation.P[0].Text
+}
+
+func (b *Fb2Book) GetAuthor() string {
+	return fmt.Sprintf("%s %s",
+		b.TextDescription.Hidden.TitleInfo.Author.FirstName,
+		b.TextDescription.Hidden.TitleInfo.Author.LastName,
+	)
+}
+
+func (b *Fb2Book) GetTitle() string {
+	return fmt.Sprintf("%s", b.TextDescription.Hidden.TitleInfo.BookTitle)
+}
+
+func (b *Fb2Book) GetID() string {
+	return b.HubID
 }

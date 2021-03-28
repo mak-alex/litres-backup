@@ -57,7 +57,7 @@ Flags:
       --logFileBackups int   number of log backup (default 3)
       --logFileCompress      compress log file (default true)
       --logFileMaxSize int   max log file size (default 1024)
-      --mode string          server run mode (default "debug")
+  -m, --mode                 production mode, short output logs (default true)
   -p, --password string      password
   -u, --user string          username
 
@@ -66,6 +66,7 @@ Global Flags:
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -v, --verbose         be verbose (this is the default)
+
 ```
 
 ### litres-backup book --help
@@ -76,16 +77,18 @@ Usage:
   litres-backup book [OPTION]... [flags]
 
 Flags:
-  -i, --book_id int                   Download or print book by № from available books for download (default -1)
-  -h, --help                          help for book
-  -n, --normalized_name               Normalize book name
-  -b, --progress                      Show progress bar
-  -t, --search_by_title string        Search book by title, ex: 'Девушка, которая играла с огнем'
-  -a, --show_available_for_download   Display a list of available books for download
+  -a, --available         Display a list of available books for download
+  -s, --description       Show description by book id or name
+  -h, --help              help for book
+  -i, --id string         Download or print book by № from available books for download
+  -n, --normalized_name   Normalize book name
+  -b, --progress          Show progress bar
+  -t, --title string      Search book by title, ex: 'Девушка, которая играла с огнем'
 
 Global Flags:
       --config string   filepath to config.yaml (default "~/.litres-backup/config/config.yaml")
   -d, --debug           print lots of debugging information
   -f, --format string   Downloading format. 'list' for available (default "fb2.zip")
   -v, --verbose         be verbose (this is the default)
+
 ```

@@ -12,12 +12,13 @@ import (
 )
 
 type BookFilter struct {
-	BookID                 int
-	SearchByTitle          string
+	BookID                 string
+	BookTitle              string
 	Format                 string
 	NormalizedName         bool
 	ShowAvailable4Download bool
 	Progress               bool
+	ShowDescription        bool
 }
 
 type Conf struct {

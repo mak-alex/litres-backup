@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mak-alex/litres-backup/pkg/consts"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -105,4 +107,50 @@ func LenReadable(length int, decimals int) (out string) {
 	}
 
 	return fmt.Sprintf("%d.%s %s", i, remainderString[:decimals], unit)
+}
+
+// WriteToFile will print any string of text to a file safely by
+// checking for errors and syncing at the end.
+func WriteToFile(filename string, data string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = io.WriteString(file, data)
+	if err != nil {
+		return err
+	}
+	return file.Sync()
+}
+
+func ReadFile(filename string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return data, err
+}
+
+func FileNotExists(filename string) bool {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return true
+	}
+	return false
+}
+
+func GetFileSize(filePath string) (int64, error) {
+	fi, err := os.Stat(filePath)
+	if err != nil {
+		return 0, err
+	}
+	// get the size
+	return fi.Size(), nil
 }

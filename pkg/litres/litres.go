@@ -1,43 +1,24 @@
 package litres
 
 import (
-	"encoding/xml"
 	"errors"
-	"fmt"
+	"github.com/mak-alex/litres-backup/pkg/bar"
 	"github.com/mak-alex/litres-backup/pkg/consts"
 	"github.com/mak-alex/litres-backup/pkg/logger"
 	"github.com/mak-alex/litres-backup/tools"
 	"go.uber.org/zap"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/mak-alex/litres-backup/pkg/bar"
-	"github.com/mak-alex/litres-backup/pkg/model"
 )
 
-var (
-	formats = []string{
-		"fb2.zip",
-		"html",
-		"html.zip",
-		"txt",
-		"txt.zip",
-		"rtf.zip",
-		"a4.pdf",
-		"a6.pdf",
-		"mobi.prc",
-		"epub",
-		"ios.epub",
-		"fb3",
-	}
+const (
+	tmpFile = "/tmp/litres.xml"
 )
 
 type Litres struct {
@@ -70,240 +51,11 @@ func New(litres *Litres) *Litres {
 		logger.Work.Error("[litres.New] can't be nil", zap.String("library", litres.Library))
 	}
 
-	litres.authorise()
-
 	return litres
 }
 
-func (l *Litres) existFormat() bool {
-	for _, format := range formats {
-		if strings.Contains(l.Format, format) {
-			return true
-		}
-	}
-	return false
-}
-
-func (l *Litres) ShowAvailable4Download(books []model.Fb2Book) {
-	fmt.Println("Display a list of available books for download:")
-	for i, book := range books {
-		filename := fmt.Sprintf(
-			"\t%d. %s %s - %s",
-			i,
-			book.TextDescription.Hidden.TitleInfo.Author.FirstName,
-			book.TextDescription.Hidden.TitleInfo.Author.LastName,
-			book.TextDescription.Hidden.TitleInfo.BookTitle,
-		)
-		fmt.Println(filename)
-	}
-}
-
-func (l *Litres) printFormats() {
-	fmt.Println("Available formats:")
-	for _, format := range formats {
-		fmt.Println("\t -", format)
-	}
-	os.Exit(0)
-}
-
-func (l *Litres) authorise() {
-	data := url.Values{}
-	data.Set("login", l.Login)
-	data.Set("pwd", l.Password)
-
-	if l.Debug {
-		logger.Work.Debug("[litres.authorise]", zap.Any("params", data))
-	}
-	client := &http.Client{}
-	r, err := http.NewRequest("POST", consts.AuthorizeUrl, strings.NewReader(data.Encode())) // URL-encoded payload
-	if err != nil && l.Verbose {
-		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
-	}
-	if r == nil {
-		return
-	}
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-	res, err := client.Do(r)
-	if err != nil {
-		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
-	}
-	if res == nil {
-		return
-	}
-	if l.Debug {
-		log.Println(res.Status)
-	}
-	defer func() {
-		_ = res.Body.Close()
-	}()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
-	}
-	if l.Debug {
-		logger.Work.Debug("[litres.authorise]", zap.Any("response", body))
-	}
-	catalitAuthorizationOk := model.CatalitAuthorizationOk{}
-	if err := xml.Unmarshal(body, &catalitAuthorizationOk); err != nil {
-		logger.Work.Fatal("[litres.authorise]", zap.Error(err))
-	}
-
-	l.sid = catalitAuthorizationOk.Sid
-}
-
-func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
-	data := url.Values{}
-	data.Set("sid", l.sid)
-	data.Set("my", "1")
-	if checkpoint != nil && *checkpoint != "" {
-		data.Set("checkpoint", *checkpoint)
-	}
-	if search != nil && *search != "" {
-		data.Set("search", *search)
-	}
-	data.Set("limit", "0,1000")
-
-	client := &http.Client{}
-	r, err := http.NewRequest("POST", consts.CatalogUrl, strings.NewReader(data.Encode())) // URL-encoded payload
-	if err != nil && l.Verbose {
-		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
-	}
-	if r == nil {
-		return nil
-	}
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-	res, err := client.Do(r)
-	if err != nil && l.Verbose {
-		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
-	}
-	if res == nil {
-		return nil
-	}
-	if l.Debug {
-		log.Println(res.Status)
-	}
-	defer func() {
-		_ = res.Body.Close()
-	}()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil && l.Verbose {
-		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
-	}
-	catalitFb2Books := model.CatalitFb2Books{}
-	if err := xml.Unmarshal(body, &catalitFb2Books); err != nil && l.Verbose {
-		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
-	}
-	if l.Debug {
-		tools.PrettyPrint(catalitFb2Books)
-	}
-
-	return &catalitFb2Books
-}
-
-func (l *Litres) DownloadBooks(checkpoint, search *string, id *int) ([]string, error) {
-	list := l.GetBooks(checkpoint, search)
-	do := func(file model.Fb2Book) (string, error) {
-		ext := filepath.Ext(file.Filename)
-		var filename string
-		if l.NormalizedName {
-			filename = fmt.Sprintf(
-				"%s %s - %s.%s",
-				file.TextDescription.Hidden.TitleInfo.Author.FirstName,
-				file.TextDescription.Hidden.TitleInfo.Author.LastName,
-				file.TextDescription.Hidden.TitleInfo.BookTitle,
-				l.Format,
-			)
-		} else {
-			filename = strings.ReplaceAll(file.Filename, strings.TrimLeft(ext, "."), l.Format)
-		}
-		if l.Debug {
-			log.Println("Filename:", filename)
-		}
-
-		return l.download(file.HubID, path.Join(l.Library, filename))
-	}
-
-	if l.Available4Download {
-		l.ShowAvailable4Download(list.Fb2Book)
-		os.Exit(0)
-	}
-
-	done := make(chan string, len(list.Fb2Book))
-	errch := make(chan error, len(list.Fb2Book))
-
-	if id == nil || *id == -1 {
-		for _, file := range list.Fb2Book {
-			go func(file model.Fb2Book) {
-				name, err := do(file)
-				if err != nil {
-					errch <- err
-					done <- ""
-					return
-				}
-				done <- name
-				errch <- nil
-			}(file)
-		}
-		bytesArray := make([]string, 0)
-		var errStr string
-		for i := 0; i < len(list.Fb2Book); i++ {
-			bytesArray = append(bytesArray, <-done)
-			if err := <-errch; err != nil {
-				errStr = errStr + " " + err.Error()
-			}
-		}
-		var err error
-		if errStr != "" {
-			err = errors.New(errStr)
-		}
-
-		if err == nil {
-			log.Println("Total downloaded books:", list.Records)
-		}
-		return bytesArray, err
-	} else {
-		res, err := do(list.Fb2Book[*id])
-		return []string{res}, err
-	}
-}
-
-func (l *Litres) existsBook(filePath string) bool {
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return false
-	}
-	return true
-}
-
-func (l *Litres) getFileSize1(filePath string) (int64, error) {
-	fi, err := os.Stat(filePath)
-	if err != nil {
-		return 0, err
-	}
-	// get the size
-	return fi.Size(), nil
-}
-
-func (l *Litres) getFileSize2(filePath string) (int64, error) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		_ = f.Close()
-	}()
-	fi, err := f.Stat()
-	if err != nil {
-		return 0, err
-	}
-	return fi.Size(), nil
-}
-
 func (l *Litres) download(hubID, filePath string) (body string, err error) {
-
+	l.authorization()
 	data := url.Values{}
 	data.Set("sid", l.sid)
 	data.Set("art", hubID)
@@ -342,8 +94,8 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 
 	fsize, _ := strconv.Atoi(res.Header.Get("Content-Length"))
 
-	if localFileSize, err := l.getFileSize1(filePath); err == nil {
-		if l.existsBook(filePath) && localFileSize == int64(fsize) {
+	if localFileSize, err := tools.GetFileSize(filePath); err == nil {
+		if !tools.FileNotExists(filePath) && localFileSize == int64(fsize) {
 			logger.Work.Info("[litres.download] exists", zap.String("filePath", filePath), zap.String("size", tools.LenReadable(fsize, 2)))
 			return "", err
 		}

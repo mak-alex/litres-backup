@@ -27,21 +27,25 @@ var bookCmd = &cobra.Command{
 		l := litres.New(params)
 
 		if l.Available4Download {
-			list := l.GetBooks(nil, &conf.FilterBook.SearchByTitle)
-			l.ShowAvailable4Download(list.Fb2Book)
+			var search string
+			if conf.FilterBook.BookTitle != "" {
+				search = conf.FilterBook.BookTitle
+			} else if conf.FilterBook.BookID != "" {
+				search = conf.FilterBook.BookID
+			}
+			l.Print(l.GetBooks(nil, &search))
 			os.Exit(0)
-		} else {
-			_, _ = l.DownloadBooks(nil, &conf.FilterBook.SearchByTitle, &conf.FilterBook.BookID)
 		}
-
+		_, _ = l.DownloadBooks(nil, &conf.FilterBook.BookTitle, &conf.FilterBook.BookID)
 	},
 }
 
 func init() {
-	bookCmd.Flags().StringVarP(&conf.FilterBook.SearchByTitle, "search_by_title", "t", "", "Search book by title, ex: 'Девушка, которая играла с огнем'")
-	bookCmd.PersistentFlags().IntVarP(&conf.FilterBook.BookID, "book_id", "i", -1, "Download or print book by № from available books for download")
+	bookCmd.Flags().StringVarP(&conf.FilterBook.BookTitle, "title", "t", "", "Search book by title, ex: 'Девушка, которая играла с огнем'")
+	bookCmd.PersistentFlags().StringVarP(&conf.FilterBook.BookID, "id", "i", "", "Download or print book by № from available books for download")
 	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.Progress, "progress", "b", false, "Show progress bar")
+	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.ShowDescription, "description", "s", false, "Show description by book id or name")
 	rootCmd.PersistentFlags().StringVarP(&conf.FilterBook.Format, "format", "f", "fb2.zip", "Downloading format. 'list' for available")
 	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.NormalizedName, "normalized_name", "n", false, "Normalize book name")
-	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.ShowAvailable4Download, "show_available_for_download", "a", false, "Display a list of available books for download")
+	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.ShowAvailable4Download, "available", "a", false, "Display a list of available books for download")
 }
