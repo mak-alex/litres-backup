@@ -26,6 +26,7 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 	)
 	catalitFb2Books := model.CatalitFb2Books{}
 	if tools.FileNotExists(tmpFile) {
+		l.authorization()
 		data := url.Values{}
 		data.Set("sid", l.sid)
 		data.Set("my", "1")
