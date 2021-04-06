@@ -25,7 +25,7 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 		body []byte
 	)
 	catalitFb2Books := model.CatalitFb2Books{}
-	if tools.FileNotExists(tmpFile) {
+	if tools.FileNotExists(l.tmpFile) {
 		l.authorization()
 		data := url.Values{}
 		data.Set("sid", l.sid)
@@ -66,12 +66,12 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 		if err != nil && l.Verbose {
 			logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 		}
-		err = tools.WriteToFile(tmpFile, string(body))
+		err = tools.WriteToFile(l.tmpFile, string(body))
 		if err != nil {
 			logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 		}
 	} else {
-		body, err = tools.ReadFile(tmpFile)
+		body, err = tools.ReadFile(l.tmpFile)
 	}
 
 	err = xml.Unmarshal(body, &catalitFb2Books)

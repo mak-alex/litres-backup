@@ -17,10 +17,6 @@ import (
 	"strings"
 )
 
-const (
-	tmpFile = "/tmp/litres.xml"
-)
-
 type Litres struct {
 	Login              string
 	Password           string
@@ -32,6 +28,7 @@ type Litres struct {
 	Verbose            bool
 	Debug              bool
 	sid                string
+	tmpFile            string
 }
 
 func New(litres *Litres) *Litres {
@@ -50,6 +47,8 @@ func New(litres *Litres) *Litres {
 	if litres.Library == "" {
 		logger.Work.Error("[litres.New] can't be nil", zap.String("library", litres.Library))
 	}
+
+	litres.tmpFile = filepath.Join(litres.Library, "litres.xml")
 
 	return litres
 }

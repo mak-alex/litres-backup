@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/mak-alex/litres-backup/pkg/conf"
+	"github.com/mak-alex/litres-backup/tools"
 	"os"
 
 	"github.com/mak-alex/litres-backup/pkg/litres"
@@ -25,6 +26,7 @@ var bookCmd = &cobra.Command{
 			Available4Download: conf.FilterBook.ShowAvailable4Download,
 		}
 		l := litres.New(params)
+		tools.MakeDirectory(l.Library)
 
 		if l.Available4Download {
 			var search string

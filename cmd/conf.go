@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"log"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -48,7 +49,7 @@ func init() {
 	configCmd.Flags().StringVarP(&conf.GlobalConfig.Password, "password", "p", "", "password")
 	_ = viper.BindPFlag("password", configCmd.Flags().Lookup("password"))
 
-	configCmd.Flags().StringVarP(&conf.GlobalConfig.Library, "library", "l", "/tmp", "The directory where the books will be saved")
+	configCmd.Flags().StringVarP(&conf.GlobalConfig.Library, "library", "l", filepath.Join(os.TempDir(), "litres"), "The directory where the books will be saved")
 	_ = viper.BindPFlag("library", configCmd.Flags().Lookup("library"))
 
 	// Log
