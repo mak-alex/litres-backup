@@ -1,14 +1,15 @@
 package litres
 
 import (
-	"errors"
+	"bytes"
+	"fmt"
 	"github.com/mak-alex/litres-backup/pkg/bar"
 	"github.com/mak-alex/litres-backup/pkg/consts"
 	"github.com/mak-alex/litres-backup/pkg/logger"
 	"github.com/mak-alex/litres-backup/tools"
 	"go.uber.org/zap"
 	"io"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -53,8 +54,9 @@ func New(litres *Litres) *Litres {
 	return litres
 }
 
-func (l *Litres) download(hubID, filePath string) (body string, err error) {
+func (l *Litres) download(hubID, filePath string, fileSize int) (bodyBook string, err error) {
 	l.authorization()
+
 	data := url.Values{}
 	data.Set("sid", l.sid)
 	data.Set("art", hubID)
@@ -69,6 +71,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	if r == nil {
 		return
 	}
+	r.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36 Edg/89.0.774.68")
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
@@ -79,23 +82,23 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	if res == nil {
 		return
 	}
-	if l.Debug {
-		log.Println(res.Status)
-	}
 	defer func() {
 		_ = res.Body.Close()
 	}()
 
-	if !strings.Contains(res.Header.Get("Content-Disposition"), "attachment") {
-		logger.Work.Info("[litres.download] not possible", zap.String("filePath", filePath))
-		return "", errors.New("<catalit-download-drm-failed/>")
+	body, _ := ioutil.ReadAll(res.Body)
+	if strings.Contains(string(body), "catalit-download-drm-failed") {
+		logger.Work.Error("At the request of the copyright holder, this book is not available for download as a file", zap.String("name", filepath.Base(filePath)), zap.String("hubID", hubID))
+		tools.OpenBrowser(fmt.Sprintf("http://www.litres.ru/pages/biblio_book/?art=%s", hubID))
+		return
 	}
 
-	fsize, _ := strconv.Atoi(res.Header.Get("Content-Length"))
+	res.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
+	//fsize, _ := strconv.Atoi(res.Header.Get("Content-Length"))
 	if localFileSize, err := tools.GetFileSize(filePath); err == nil {
-		if !tools.FileNotExists(filePath) && localFileSize == int64(fsize) {
-			logger.Work.Info("[litres.download] exists", zap.String("filePath", filePath), zap.String("size", tools.LenReadable(fsize, 2)))
+		if !tools.FileNotExists(filePath) && localFileSize == int64(fileSize) {
+			logger.Work.Info("[litres.download] exists", zap.String("filePath", filePath), zap.String("size", tools.LenReadable(fileSize, 2)))
 			return "", err
 		}
 	}
@@ -109,7 +112,7 @@ func (l *Litres) download(hubID, filePath string) (body string, err error) {
 	}()
 
 	if l.Progress {
-		counter := bar.NewWriteCounter(fsize, filePath)
+		counter := bar.NewWriteCounter(fileSize, filePath)
 		counter.Start()
 		_, err = io.Copy(out, io.TeeReader(res.Body, counter))
 		if err != nil {

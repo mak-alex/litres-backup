@@ -2,7 +2,6 @@ package litres
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"github.com/mak-alex/litres-backup/pkg/consts"
 	"github.com/mak-alex/litres-backup/pkg/logger"
@@ -86,10 +85,11 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 }
 
 func (l *Litres) DownloadBooks(checkpoint, title, id *string) ([]string, error) {
-	l.authorization()
-
 	list := l.GetBooks(checkpoint, title)
 	do := func(file *model.Fb2Book) (string, error) {
+		if !file.CheckFileType(l.Format) {
+			return "", fmt.Errorf("it is not possible to download the book using this format %s", l.Format)
+		}
 		ext := filepath.Ext(file.Filename)
 		var filename string
 		if l.NormalizedName {
@@ -107,47 +107,25 @@ func (l *Litres) DownloadBooks(checkpoint, title, id *string) ([]string, error) 
 			log.Println("Filename:", filename)
 		}
 
-		return l.download(file.HubID, path.Join(l.Library, filename))
+		return l.download(file.HubID, path.Join(l.Library, filename), file.GetSizeByFileType(l.Format))
 	}
-
-	done := make(chan string, len(list.Fb2Book))
-	errCh := make(chan error, len(list.Fb2Book))
 
 	if id != nil && *id != "" {
-		res, err := do(list.GetBookByID(id))
+		res, err := do(list.GetBookByID(id, &l.Format, true))
 		return []string{res}, err
 	} else if title != nil && *title != "" {
-		res, err := do(list.GetBookByTitle(title))
+		res, err := do(list.GetBookByTitle(title, &l.Format, true))
 		return []string{res}, err
 	}
 
+	books := make([]string, 0)
 	for _, file := range list.Fb2Book {
-		//go func(file model.Fb2Book) {
 		name, err := do(&file)
 		if err != nil {
-			errCh <- err
-			done <- ""
-			return []string{}, err
+			return books, err
 		}
-		done <- name
-		errCh <- nil
-		//}(file)
-	}
-	bytesArray := make([]string, 0)
-	var errStr string
-	for i := 0; i < len(list.Fb2Book); i++ {
-		bytesArray = append(bytesArray, <-done)
-		if err := <-errCh; err != nil {
-			errStr = errStr + " " + err.Error()
-		}
-	}
-	var err error
-	if errStr != "" {
-		err = errors.New(errStr)
+		books = append(books, name)
 	}
 
-	if err == nil {
-		log.Println("Total downloaded books:", list.Records)
-	}
-	return bytesArray, err
+	return books, nil
 }

@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/xml"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -19,18 +20,39 @@ type CatalitFb2Books struct {
 	Fb2Book     []Fb2Book `xml:"fb2-book"`
 }
 
-func (c *CatalitFb2Books) GetBookByID(id *string) *Fb2Book {
+func (c *Fb2Book) CheckFileType(fileType string) bool {
+	for _, file := range c.Files.File {
+		if file.Type == fileType {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *Fb2Book) GetSizeByFileType(fileType string) int {
+	for _, file := range c.Files.File {
+		if file.Type == fileType {
+			fileSize, _ := strconv.Atoi(file.Size)
+			return fileSize
+		}
+	}
+
+	return 0
+}
+
+func (c *CatalitFb2Books) GetBookByID(id, fileType *string, download bool) *Fb2Book {
 	for _, fb2Book := range c.Fb2Book {
-		if fb2Book.GetID() == *id {
+		if download && (fb2Book.GetID() == *id && fb2Book.CheckFileType(*fileType)) || fb2Book.GetID() == *id {
 			return &fb2Book
 		}
 	}
 	return nil
 }
 
-func (c *CatalitFb2Books) GetBookByTitle(title *string) *Fb2Book {
+func (c *CatalitFb2Books) GetBookByTitle(title, fileType *string, download bool) *Fb2Book {
 	for _, fb2Book := range c.Fb2Book {
-		if strings.EqualFold(fb2Book.GetTitle(), *title) {
+		if download && (strings.EqualFold(fb2Book.GetTitle(), *title) && fb2Book.CheckFileType(*fileType)) || strings.EqualFold(fb2Book.GetTitle(), *title) {
 			return &fb2Book
 		}
 	}
@@ -39,10 +61,10 @@ func (c *CatalitFb2Books) GetBookByTitle(title *string) *Fb2Book {
 
 func (c *CatalitFb2Books) FindBook(id, title *string) *Fb2Book {
 	if id != nil && *id != "" {
-		return c.GetBookByID(id)
+		return c.GetBookByID(id, nil, false)
 	}
 	if title != nil && *title != "" {
-		return c.GetBookByTitle(title)
+		return c.GetBookByTitle(title, nil, false)
 	}
 
 	return nil

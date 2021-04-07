@@ -26,7 +26,7 @@ var bookCmd = &cobra.Command{
 			Available4Download: conf.FilterBook.ShowAvailable4Download,
 		}
 		l := litres.New(params)
-		tools.MakeDirectory(l.Library)
+		_ = tools.MakeDirectory(l.Library)
 
 		if l.Available4Download {
 			var search string

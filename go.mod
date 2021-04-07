@@ -3,10 +3,10 @@ module github.com/mak-alex/litres-backup
 go 1.16
 
 require (
+	github.com/antchfx/htmlquery v1.2.3
 	github.com/cheggaaa/pb v1.0.29
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20190411002643-bd77b112433e // indirect
-	github.com/gotk3/gotk3 v0.5.3-0.20210326060404-6328e5470ece
 	github.com/mattn/go-colorable v0.1.6
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/pelletier/go-toml v1.8.1

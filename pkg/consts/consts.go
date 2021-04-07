@@ -28,12 +28,12 @@ const (
 	KB = 1000
 
 	// urls
-	baseUrl      = "http://robot.litres.ru/"
-	AuthorizeUrl = baseUrl + "pages/catalit_authorise/"
+	BaseUrl      = "http://robot.litres.ru/"
+	AuthorizeUrl = BaseUrl + "pages/catalit_authorise/"
 	//GenresUrl       = baseUrl + "pages/catalit_genres/"
 	//AuthorsUrl      = baseUrl + "pages/catalit_persons/"
-	CatalogUrl = baseUrl + "pages/catalit_browser/"
+	CatalogUrl = BaseUrl + "pages/catalit_browser/"
 	//TrialsUrl       = baseUrl + "static/trials/"
 	//PurchaseUrl     = baseUrl + "pages/purchase_book/"
-	DownloadBookUrl = baseUrl + "pages/catalit_download_book/"
+	DownloadBookUrl = BaseUrl + "pages/catalit_download_book/"
 )
