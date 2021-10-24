@@ -1,24 +1,26 @@
 package conf
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/mak-alex/litres-backup/pkg/consts"
 	"github.com/mak-alex/litres-backup/tools"
 	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 type BookFilter struct {
-	BookID                 string
+	BookID                 int
 	BookTitle              string
 	Format                 string
 	NormalizedName         bool
 	ShowAvailable4Download bool
 	Progress               bool
 	ShowDescription        bool
+	Offset, MaxCount       int
 }
 
 type Conf struct {

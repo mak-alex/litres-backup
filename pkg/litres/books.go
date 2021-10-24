@@ -3,11 +3,6 @@ package litres
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/mak-alex/litres-backup/pkg/consts"
-	"github.com/mak-alex/litres-backup/pkg/logger"
-	"github.com/mak-alex/litres-backup/pkg/model"
-	"github.com/mak-alex/litres-backup/tools"
-	"go.uber.org/zap"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,29 +11,84 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/mak-alex/litres-backup/pkg/consts"
+	"github.com/mak-alex/litres-backup/pkg/logger"
+	"github.com/mak-alex/litres-backup/pkg/model"
+	"github.com/mak-alex/litres-backup/tools"
+	"go.uber.org/zap"
 )
 
-func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
-	var (
-		err  error
-		body []byte
-	)
-	catalitFb2Books := model.CatalitFb2Books{}
+func (l *Litres) LoadPurchasedBooks(search *string, offset, maxCount int) (result model.CatalitFb2Books) {
+	params := url.Values{}
+	params.Set("my", "1")
+	params.Set("limit", fmt.Sprintf("%d,%d", offset, maxCount))
+	if search != nil && *search != "" {
+		params.Set("search", *search)
+	}
+
+	l.loadBooks(params, &result)
+	return
+}
+
+func (l *Litres) LoadPopularBooks(offset, maxCount int) (result model.CatalitFb2Books) {
+	params := url.Values{}
+	params.Set("rating", "books")
+	params.Set("limit", fmt.Sprintf("%d,%d", offset, maxCount))
+
+	l.loadBooks(params, &result)
+	return
+}
+
+func (l *Litres) LoadNewBooks(offset, maxCount int) (result model.CatalitFb2Books) {
+	params := url.Values{}
+	params.Set("rating", "hot")
+	params.Set("limit", fmt.Sprintf("%d,%d", offset, maxCount))
+
+	l.loadBooks(params, &result)
+	return
+}
+
+func (l *Litres) LoadBooksByGenre(genreID, offset, maxCount int) (result model.CatalitFb2Books) {
+	params := url.Values{}
+	params.Set("genre", strconv.Itoa(genreID))
+	params.Set("limit", fmt.Sprintf("%d,%d", offset, maxCount))
+
+	l.loadBooks(params, &result)
+	return
+}
+
+func (l *Litres) LoadBooksByBookId(bookID int, myOnly bool) (result model.CatalitFb2Books) {
+	params := url.Values{}
+	params.Set("art", strconv.Itoa(bookID))
+	if myOnly {
+		params.Set("my", "1")
+	}
+
+	l.loadBooks(params, &result)
+	return
+}
+
+func (l *Litres) LoadBooksByAuthor(authorID, offset, maxCount int) (result model.CatalitFb2Books) {
+	params := url.Values{}
+
+	params.Set("person", strconv.Itoa(authorID))
+
+	l.loadBooks(params, &result)
+	return
+}
+
+func (l *Litres) loadBooks(params url.Values, result *model.CatalitFb2Books) (err error) {
+	var body []byte
+
 	if tools.FileNotExists(l.tmpFile) {
 		l.authorization()
-		data := url.Values{}
-		data.Set("sid", l.sid)
-		data.Set("my", "1")
-		if checkpoint != nil && *checkpoint != "" {
-			data.Set("checkpoint", *checkpoint)
-		}
-		if search != nil && *search != "" {
-			data.Set("search", *search)
-		}
-		data.Set("limit", "0,1000")
+		params.Set("sid", l.sid)
+		params.Set("search_types", "0")
+		params.Set("checkpoint", "2000-01-01 00:00:00")
 
 		client := &http.Client{}
-		r, err := http.NewRequest("POST", consts.CatalogUrl, strings.NewReader(data.Encode())) // URL-encoded payload
+		r, err := http.NewRequest("POST", consts.CatalogUrl, strings.NewReader(params.Encode()))
 		if err != nil && l.Verbose {
 			logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 		}
@@ -46,7 +96,7 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 			return nil
 		}
 		r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+		r.Header.Add("Content-Length", strconv.Itoa(len(params.Encode())))
 
 		res, err := client.Do(r)
 		if err != nil && l.Verbose {
@@ -71,21 +121,27 @@ func (l *Litres) GetBooks(checkpoint, search *string) *model.CatalitFb2Books {
 		}
 	} else {
 		body, err = tools.ReadFile(l.tmpFile)
+		if err != nil {
+			logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
+		}
 	}
 
-	err = xml.Unmarshal(body, &catalitFb2Books)
+	err = xml.Unmarshal(body, result)
 	if err != nil && l.Verbose {
 		logger.Work.Fatal("[litres.GetBooks]", zap.Error(err))
 	}
+
 	if l.Debug {
-		tools.PrettyPrint(catalitFb2Books)
+		tools.PrettyPrint(result)
 	}
 
-	return &catalitFb2Books
+	if !l.Available4Download {
+		l.downloadBooks(result, nil, nil)
+	}
+	return
 }
 
-func (l *Litres) DownloadBooks(checkpoint, title, id *string) ([]string, error) {
-	list := l.GetBooks(checkpoint, title)
+func (l *Litres) downloadBooks(list *model.CatalitFb2Books, title, id *string) ([]string, error) {
 	do := func(file *model.Fb2Book) (string, error) {
 		if !file.CheckFileType(l.Format) {
 			return "", fmt.Errorf("it is not possible to download the book using this format %s", l.Format)

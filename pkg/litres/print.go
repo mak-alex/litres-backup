@@ -2,14 +2,15 @@ package litres
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
+
 	"github.com/mak-alex/litres-backup/pkg/conf"
 	"github.com/mak-alex/litres-backup/pkg/model"
 	"github.com/mak-alex/litres-backup/pkg/table"
-	"os"
-	"text/tabwriter"
 )
 
-func (l *Litres) Print(books *model.CatalitFb2Books) {
+func (l *Litres) Print(books model.CatalitFb2Books) {
 	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 2, '\t', 0)
 	header := []string{
 		fmt.Sprintf("%10s", "ID"),
@@ -31,24 +32,13 @@ func (l *Litres) Print(books *model.CatalitFb2Books) {
 		_ = writer.Flush()
 	}
 
-	if conf.FilterBook.BookTitle != "" || conf.FilterBook.BookID != "" {
-		b := books.FindBook(&conf.FilterBook.BookID, &conf.FilterBook.BookTitle)
-		if b != nil {
-			pPrint(*b)
-			if conf.FilterBook.ShowDescription {
-				fmt.Println(fmt.Sprintf("\t\t%s", b.GetDescription()))
-			}
+	for i, b := range books.Fb2Book {
+		if i > 0 && conf.FilterBook.ShowDescription {
+			fmt.Printf("\n\n\n")
 		}
-	} else {
-		for i, b := range books.Fb2Book {
-			if i > 0 && conf.FilterBook.ShowDescription {
-				fmt.Printf("\n\n\n")
-			}
-			pPrint(b)
-			if conf.FilterBook.ShowDescription {
-				fmt.Println(fmt.Sprintf("\t\t%s", b.GetDescription()))
-			}
+		pPrint(b)
+		if conf.FilterBook.ShowDescription {
+			fmt.Printf("\t\t%s", b.GetDescription())
 		}
 	}
-
 }

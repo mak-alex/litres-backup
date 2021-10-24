@@ -3,11 +3,6 @@ package litres
 import (
 	"bytes"
 	"fmt"
-	"github.com/mak-alex/litres-backup/pkg/bar"
-	"github.com/mak-alex/litres-backup/pkg/consts"
-	"github.com/mak-alex/litres-backup/pkg/logger"
-	"github.com/mak-alex/litres-backup/tools"
-	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +11,12 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/mak-alex/litres-backup/pkg/bar"
+	"github.com/mak-alex/litres-backup/pkg/consts"
+	"github.com/mak-alex/litres-backup/pkg/logger"
+	"github.com/mak-alex/litres-backup/tools"
+	"go.uber.org/zap"
 )
 
 type Litres struct {
@@ -71,7 +72,7 @@ func (l *Litres) download(hubID, filePath string, fileSize int) (bodyBook string
 	if r == nil {
 		return
 	}
-	r.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36 Edg/89.0.774.68")
+	r.Header.Add("User-Agent", "CoolReader/3(Android)")
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 

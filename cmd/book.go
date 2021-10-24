@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/mak-alex/litres-backup/pkg/conf"
 	"github.com/mak-alex/litres-backup/tools"
-	"os"
 
 	"github.com/mak-alex/litres-backup/pkg/litres"
 	"github.com/spf13/cobra"
@@ -28,23 +27,19 @@ var bookCmd = &cobra.Command{
 		l := litres.New(params)
 		_ = tools.MakeDirectory(l.Library)
 
-		if l.Available4Download {
-			var search string
-			if conf.FilterBook.BookTitle != "" {
-				search = conf.FilterBook.BookTitle
-			} else if conf.FilterBook.BookID != "" {
-				search = conf.FilterBook.BookID
-			}
-			l.Print(l.GetBooks(nil, &search))
-			os.Exit(0)
+		if conf.FilterBook.BookID != 0 {
+			l.Print(l.LoadBooksByBookId(conf.FilterBook.BookID, true))
+			return
 		}
-		_, _ = l.DownloadBooks(nil, &conf.FilterBook.BookTitle, &conf.FilterBook.BookID)
+		l.Print(l.LoadPurchasedBooks(&conf.FilterBook.BookTitle, conf.FilterBook.Offset, conf.FilterBook.MaxCount))
 	},
 }
 
 func init() {
 	bookCmd.Flags().StringVarP(&conf.FilterBook.BookTitle, "title", "t", "", "Search book by title, ex: 'Девушка, которая играла с огнем'")
-	bookCmd.PersistentFlags().StringVarP(&conf.FilterBook.BookID, "id", "i", "", "Download or print book by № from available books for download")
+	bookCmd.PersistentFlags().IntVarP(&conf.FilterBook.BookID, "id", "i", 0, "Download or print book by № from available books for download")
+	bookCmd.PersistentFlags().IntVarP(&conf.FilterBook.Offset, "offset", "o", 0, "default offset 0")
+	bookCmd.PersistentFlags().IntVarP(&conf.FilterBook.MaxCount, "max_count", "m", 100, "default max count 100")
 	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.Progress, "progress", "b", false, "Show progress bar")
 	bookCmd.PersistentFlags().BoolVarP(&conf.FilterBook.ShowDescription, "description", "s", false, "Show description by book id or name")
 	rootCmd.PersistentFlags().StringVarP(&conf.FilterBook.Format, "format", "f", "fb2.zip", "Downloading format. 'list' for available")
