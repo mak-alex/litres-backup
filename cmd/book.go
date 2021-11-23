@@ -35,6 +35,7 @@ var bookCmd = &cobra.Command{
 	},
 }
 
+//
 func init() {
 	bookCmd.Flags().StringVarP(&conf.FilterBook.BookTitle, "title", "t", "", "Search book by title, ex: 'Девушка, которая играла с огнем'")
 	bookCmd.PersistentFlags().IntVarP(&conf.FilterBook.BookID, "id", "i", 0, "Download or print book by № from available books for download")
